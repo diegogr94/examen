@@ -79,13 +79,26 @@ public class MotorJuego {
 
             if (hayEnemigoEnPosicion(nuevaFila, nuevaColumna)) {
                 iniciarCombate(nuevaFila, nuevaColumna);
-
+            
             } else {
                 protagonista.setPosicion(nuevaFila, nuevaColumna);
+                Celda celdaTrampa = mapa.getCelda(nuevaFila, nuevaColumna);
+                if(celdaTrampa.getTipo() == TipoCelda.TRAMPA){
+                    protagonista.disminuirPuntosVida(5);
+                    celdaTrampa.setTipo(TipoCelda.TRAMPA);
+                    System.out.println("OH  HAS RECIBIDO DAÑO");
+                    if(protagonista.getPuntosVida() <= 0 )
+                    finalizarJuego();
+                }
+
+
+
                 gestorEnemigo.moverEnemigos(protagonista, mapa);
                 notifyObservers();
 
             }
+
+            
 
         }
     }

@@ -51,4 +51,14 @@ public class Protagonista extends Personaje {
         return direccion;
     }
 
-}
+     
+   public void disminuirPuntosVida(int cantidad){
+        this.puntosVida -= cantidad;
+
+        if(puntosVida < 0){
+            puntosVida = 0;
+        }
+    }
+ }
+
+

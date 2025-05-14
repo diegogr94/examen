@@ -1,4 +1,5 @@
 package com.poma.model;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -6,25 +7,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
 /**
- * Clase encargada de gestionar la lista de enemigos en el juego, su carga, movimiento y eliminación.
+ * Clase encargada de gestionar la lista de enemigos en el juego, su carga,
+ * movimiento y eliminación.
  */
 public class GestorEnemigo {
 
     private List<Enemigo> enemigos;
 
-/**
- * Constructor. Inicializa la lista de enemigos y carga los enemigos desde el archivo especificado.
- */
+    /**
+     * Constructor. Inicializa la lista de enemigos y carga los enemigos desde el
+     * archivo especificado.
+     */
     public GestorEnemigo() {
         enemigos = new ArrayList<>();
         cargarEnemigos("/com/poma/dataUrl/enemigos.txt");
     }
 
-/**
- * Carga los enemigos desde un archivo de texto y los añade a la lista de enemigos.
- * @param ruta Ruta del archivo de texto con los datos de los enemigos.
- */
+    /**
+     * Carga los enemigos desde un archivo de texto y los añade a la lista de
+     * enemigos.
+     * 
+     * @param ruta Ruta del archivo de texto con los datos de los enemigos.
+     */
     private void cargarEnemigos(String ruta) {
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(ruta)))) {
@@ -61,31 +67,34 @@ public class GestorEnemigo {
     }
 
     /**
-     * Mueve todos los enemigos en el escenario. Si el protagonista está dentro del rango de percepción
-     * de un enemigo, este intentará acercarse a él evitando paredes y otras posiciones ocupadas.
-     * Si no está cerca, el enemigo se moverá aleatoriamente a una celda transitable.
+     * Mueve todos los enemigos en el escenario. Si el protagonista está dentro del
+     * rango de percepción
+     * de un enemigo, este intentará acercarse a él evitando paredes y otras
+     * posiciones ocupadas.
+     * Si no está cerca, el enemigo se moverá aleatoriamente a una celda
+     * transitable.
      * 
      * Un HashSet es una estructura de datos que se utiliza para almacenar elementos
      * únicos y permite búsquedas rápidas. En este caso, lo usamos para rastrear
      * las posiciones ocupadas por los enemigos en el mapa.
      * 
      * @param protagonista El protagonista del juego.
-     * @param escenario El escenario del juego.
+     * @param escenario    El escenario del juego.
      */
     public void moverEnemigos(Protagonista protagonista, LectorEscenario escenario) {
 
         Random rm = new Random();
-    
+
         int filaProta = protagonista.getFila();
         int columProta = protagonista.getColumna();
-    
+
         /**
          * creamos un conjunto vacío para almacenar las posiciones ocupadas por los
          * enemigos.
          * Registrar las posiciones iniciales de los enemigos
          */
         Set<String> posicionesOcupadasEnemigo = new HashSet<>();
-    
+
         /**
          * El bucle for recorre la lista de enemigos.
          * Para cada enemigo, se obtiene su posición (fila y columna) y se
@@ -97,37 +106,40 @@ public class GestorEnemigo {
         for (Enemigo enemigo : enemigos) {
             posicionesOcupadasEnemigo.add(enemigo.getFila() + "," + enemigo.getColumna());
         }
-    
+
         for (Enemigo enemigo : enemigos) {
-    
+
             int filaEnemigo = enemigo.getFila();
             int columEnemigo = enemigo.getColumna();
-    
+
             boolean cercaDelProta = (filaProta >= filaEnemigo - enemigo.getPercepcion()
                     && filaProta <= filaEnemigo + enemigo.getPercepcion()) &&
                     (columProta >= columEnemigo - enemigo.getPercepcion()
                             && columProta <= columEnemigo + enemigo.getPercepcion());
-    
+
             int nvaFila = filaEnemigo;
             int nvaColum = columEnemigo;
-    
-    
+
             if (cercaDelProta) {
                 // Mover hacia el protagonista, paso a paso, evitando paredes
-    
+
                 int dFila = Integer.compare(filaProta, filaEnemigo);
                 int dCol = Integer.compare(columProta, columEnemigo);
-    
+
+               
+
                 // Intentar movimiento vertical primero
-                if (dFila != 0 && esCeldaTransitable(filaEnemigo + dFila, columEnemigo, escenario, posicionesOcupadasEnemigo)) {
+                if (dFila != 0 && esCeldaTransitable(filaEnemigo + dFila, columEnemigo, escenario,
+                        posicionesOcupadasEnemigo)) {
                     nvaFila = filaEnemigo + dFila;
                 }
                 // Si no se pudo mover vertical, intentar horizontal
-                else if (dCol != 0 && esCeldaTransitable(filaEnemigo, columEnemigo + dCol, escenario, posicionesOcupadasEnemigo)) {
+                else if (dCol != 0
+                        && esCeldaTransitable(filaEnemigo, columEnemigo + dCol, escenario, posicionesOcupadasEnemigo)) {
                     nvaColum = columEnemigo + dCol;
                 }
                 // Si no se puede mover, se queda quieto
-    
+
                 // Verificar que el enemigo no se mueva a la posición del protagonista
                 if (nvaFila == filaProta && nvaColum == columProta) {
                     // System.out.println("¡El enemigo ha alcanzado al protagonista!");
@@ -137,19 +149,19 @@ public class GestorEnemigo {
                     // Luego Aquí vamos a agregar lógica para manejar el combate por ahora solo lo
                     // mostrara y pasara por encima del enemigo
                 }
-    
+
             } else {
                 // Movimiento aleatorio
                 int[][] direcciones = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
                 int intentos = 0;
                 boolean movido = false;
-    
+
                 // Intentar encontrar una posición válida
                 while (intentos < direcciones.length && !movido) {
                     int index = rm.nextInt(direcciones.length); // Seleccionar un índice aleatorio
                     int f = filaEnemigo + direcciones[index][0];
                     int c = columEnemigo + direcciones[index][1];
-    
+
                     // Verificar que las coordenadas sean válidas y no estén ocupadas
                     if (esCeldaTransitable(f, c, escenario, posicionesOcupadasEnemigo)
                             && !(f == filaProta && c == columProta)) {
@@ -160,7 +172,7 @@ public class GestorEnemigo {
                     intentos++;
                 }
             }
-    
+
             // Actualizar la posición del enemigo si es válida y no está ocupada
             if ((nvaFila != filaEnemigo || nvaColum != columEnemigo)
                     && esCeldaTransitable(nvaFila, nvaColum, escenario, posicionesOcupadasEnemigo)) {
@@ -172,32 +184,33 @@ public class GestorEnemigo {
     }
 
     /**
-     * Verifica si una celda es transitable para un enemigo, es decir, si está dentro de los límites del escenario,
+     * Verifica si una celda es transitable para un enemigo, es decir, si está
+     * dentro de los límites del escenario,
      * no es una pared y no está ocupada por otro enemigo.
-     * @param fila Fila de la celda.
-     * @param columna Columna de la celda.
-     * @param escenario El escenario del juego.
-     * @param posicionesOcupadasEnemigo Conjunto de posiciones ocupadas por enemigos.
+     * 
+     * @param fila                      Fila de la celda.
+     * @param columna                   Columna de la celda.
+     * @param escenario                 El escenario del juego.
+     * @param posicionesOcupadasEnemigo Conjunto de posiciones ocupadas por
+     *                                  enemigos.
      * @return
-     */   
-    private boolean esCeldaTransitable(int fila, int columna, LectorEscenario escenario, Set<String> posicionesOcupadasEnemigo) {
+     */
+    private boolean esCeldaTransitable(int fila, int columna, LectorEscenario escenario,
+            Set<String> posicionesOcupadasEnemigo) {
         return fila >= 0 && fila < escenario.getAlto()
-            && columna >= 0 && columna < escenario.getAncho()
-            && escenario.getCelda(fila, columna).getTipo() != TipoCelda.PARED
-            && !posicionesOcupadasEnemigo.contains(fila + "," + columna);
+                && columna >= 0 && columna < escenario.getAncho()
+                && escenario.getCelda(fila, columna).getTipo() != TipoCelda.PARED
+                && !posicionesOcupadasEnemigo.contains(fila + "," + columna);
     }
-
 
     /**
      * Elimina un enemigo de la lista de enemigos gestionados.
+     * 
      * @param enemigo El enemigo a eliminar.
      */
 
-     public void eliminarEnemigo(Enemigo enemigo){
+    public void eliminarEnemigo(Enemigo enemigo) {
         enemigos.remove(enemigo);
         System.out.println(enemigo.getNombre() + " eliminado del gestor. Total enemigos: " + enemigos.size());
     }
 }
-
-    
-
